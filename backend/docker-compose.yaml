@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+
+  db:
+    image: postgres:15
+    restart: always
+    ports: 
+      - '5432:5432'
+    environment:
+      POSTGRES_PASSWORD: arquimides
+      POSTGRES_DB: arquimides
+      #PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_HOST_AUTH_METHOD: trust
+    container_name: Blog
+    volumes: 
+      - ./postgres:/var/lib/postgresql/data

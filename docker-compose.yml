@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+  # PostgreSQL para Laravel Backend
+  postgres:
+    image: postgres:15
+    container_name: arquimides-postgres
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_PASSWORD: arquimides
+      POSTGRES_DB: arquimides
+      POSTGRES_USER: arquimides
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - arquimides-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U arquimides"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MongoDB para NestJS Reports Service
+  mongodb:
+    image: mongo:7
+    container_name: arquimides-mongodb
+    restart: always
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: arquimides
+      MONGO_INITDB_ROOT_PASSWORD: arquimides
+      MONGO_INITDB_DATABASE: reports
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - arquimides-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Laravel Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: arquimides-backend
+    restart: always
+    ports:
+      - '8000:8000'
+    volumes:
+      - ./backend:/var/www/html
+      - backend_vendor:/var/www/html/vendor
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: arquimides
+      DB_USERNAME: arquimides
+      DB_PASSWORD: arquimides
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - arquimides-network
+    # Descomenta si tienes Dockerfile en backend
+    # command: php artisan serve --host=0.0.0.0 --port=8000
+
+  # NestJS Reports Service
+  reports-service:
+    build:
+      context: ./reports-service
+      dockerfile: Dockerfile
+    container_name: arquimides-reports
+    restart: always
+    ports:
+      - '3001:3001'
+    volumes:
+      - ./reports-service:/app
+      - reports_node_modules:/app/node_modules
+    environment:
+      MONGODB_URI: mongodb://arquimides:arquimides@mongodb:27017/reports?authSource=admin
+      PORT: 3001
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - arquimides-network
+    # Descomenta si tienes Dockerfile en reports-service
+    # command: npm run start:dev
+
+volumes:
+  postgres_data:
+    driver: local
+  mongodb_data:
+    driver: local
+  backend_vendor:
+    driver: local
+  reports_node_modules:
+    driver: local
+
+networks:
+  arquimides-network:
+    driver: bridge
