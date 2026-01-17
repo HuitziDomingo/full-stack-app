@@ -20,6 +20,8 @@ Arquimides/
 - Node.js 18+ (para desarrollo local)
 - PHP 8.2+ (para desarrollo local del backend)
 - Composer (para desarrollo local del backend)
+- Bun (para Angular y React Native)
+- pnpm (para NestJS Reports Service)
 
 ### Levantar todos los servicios con Docker
 
@@ -49,25 +51,27 @@ php artisan serve
 #### Frontend (Angular)
 ```bash
 cd frontend
-npm install
+bun install
+bun run ng serve
+# O alternativamente:
 ng serve
 ```
 
 #### Mobile (React Native)
 ```bash
 cd mobile
-npm install
+bun install
 # iOS
-npx react-native run-ios
+bun run react-native run-ios
 # Android
-npx react-native run-android
+bun run react-native run-android
 ```
 
 #### Reports Service (NestJS)
 ```bash
 cd reports-service
-npm install
-npm run start:dev
+pnpm install
+pnpm run start:dev
 ```
 
 ## 📦 Servicios
@@ -102,6 +106,7 @@ npm run start:dev
 - **Microservicio**: NestJS
 - **Bases de Datos**: PostgreSQL, MongoDB
 - **Contenedores**: Docker & Docker Compose
+- **Gestores de Paquetes**: Bun (Angular/React Native), pnpm (NestJS), Composer (Laravel)
 
 ## 📝 Notas de Desarrollo
 
@@ -109,6 +114,10 @@ npm run start:dev
 - Los archivos `.env` no deben subirse a Git (ver `.gitignore`)
 - Usa `docker-compose.yml` en la raíz para orquestar todos los servicios
 - Cada servicio puede ejecutarse independientemente para desarrollo
+- **Gestores de paquetes**: 
+  - Angular y React Native usan **Bun**
+  - NestJS Reports Service usa **pnpm**
+  - Laravel usa **Composer**
 
 ## 🤝 Contribución
 
